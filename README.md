@@ -10,55 +10,55 @@
 
 | 구간 | 미션 내용 | 이 프로젝트의 대응 방식 |
 | --- | --- | --- |
-| **A** | 시작 지점에서 신호가 빨간불에서 파란불(초록불)로 바뀌는 순간 랩타임 시작 | 고정 ROI의 HSV 색상을 판별하고 `/traffic_light`의 `Green` 신호가 확인될 때까지 정지 |
-| **B** | 차량이 인지 센서에 감지되는 순간 보행자가 1회 움직임 | YOLO와 LiDAR로 보행자를 인지하고, 설정 거리 안에서 정지한 뒤 통과 |
-| **C** | 차량이 C 구간에 진입하면 지정 위치의 장애물이 움직이기 시작 | 차량을 지속 추적하고 전방 거리에 따라 정지 또는 속도 제한, 터널 구간에서는 양쪽 벽의 중점을 추종 |
-| **D** | 라바콘 장애물의 배치는 경기 시작 전에 무작위로 결정 | 두 콘의 상대 위치로 빈 공간의 가상 waypoint를 실시간 생성하여 좌·우 배치에 대응 |
-| **E** | 종료선에 앞바퀴가 닿는 순간 랩타임 종료, 이후 20초 안에 평행 주차 | 마지막 가로 정지선을 감지한 뒤 전방 벽까지 접근하고 사전 기록된 조향 시퀀스로 평행 주차 |
+| **A. 신호등 출발 / 보행자 대응** | 초록 신호에 맞춰 출발한 뒤 보행자 구간 통과 | 고정 ROI에서 초록 신호를 확인하면 출발하고, YOLO와 LiDAR로 보행자를 인지해 설정 거리 안에서 정지한 뒤 다시 출발 |
+| **B. S구간 / U턴 / 터널 구간** | 연속 곡선과 U턴을 통과한 뒤 터널 구간 주행 | Stanley 제어로 차선을 추종하고, 터널에서는 LiDAR로 감지한 좌·우 벽의 중점을 따라 주행 |
+| **C. 차량 추종 / 터널 진입** | 지정 위치에서 움직이는 전방 차량을 추종하며 터널 진입 | 차량을 지속 추적해 전방 거리에 따라 정지하거나 속도를 제한하고, 터널 진입 후 양쪽 벽의 중점을 추종 |
+| **D. 라바콘 회피** | 경기 시작 전에 무작위로 배치된 라바콘 통과 | 두 콘의 상대 위치로 빈 공간의 가상 waypoint를 실시간 생성하여 좌·우 배치에 대응 |
+| **E. 종료선 이후 접근 및 평행 주차** | 종료선을 통과한 뒤 20초 안에 평행 주차 | 마지막 가로 정지선을 감지한 뒤 전방 벽까지 접근하고 사전 기록된 조향 시퀀스로 평행 주차 |
 
 랩타임의 시작·종료 판정과 장애물의 실제 움직임은 경기 운영 측에서 수행하며, 이 저장소는 각 상황을 인지하고 차량을 제어하는 코드를 담고 있습니다.
 
-## 미션별 주행 및 디버깅 화면
+## 미션별 주행 및 디버깅 영상
 
-각 미션의 **실차 주행 화면**과 **디버깅 화면**을 나란히 배치했습니다. 디버깅 화면에서는 차선 인식, 객체 검출, LiDAR 융합, 상태 전이 등 당시의 판단 근거를 함께 확인할 수 있습니다.
+각 미션의 **실차 주행 영상**과 **디버깅 영상**을 나란히 배치했습니다. 디버깅 영상에서는 차선 인식, 객체 검출, LiDAR 융합, 상태 전이 등 당시의 판단 근거를 함께 확인할 수 있습니다.
 
 ### A. 신호등 출발 / 보행자 대응
 
-| 실차 주행 화면 | 디버깅 화면 |
+| 실차 주행 영상 | 디버깅 영상 |
 | --- | --- |
-| <img src="assets/images/mission_a_real.png" alt="Mission A real run" width="420"> | <img src="assets/images/mission_a_debug.png" alt="Mission A debug view" width="420"> |
+| <img src="assets/gifs/mission_a_real.gif" alt="Mission A real run" width="420"> | <img src="assets/gifs/mission_a_debug.gif" alt="Mission A debug run" width="420"> |
 
 - **핵심 로직:** 고정 ROI에서 초록 신호를 확인하면 출발하고, 이후 YOLO 검출과 LiDAR 클러스터를 결합해 보행자를 인지하여 설정 거리 이내에서는 정지한 뒤 안전하게 다시 출발합니다.
 
 ### B. S구간 / U턴 / 터널 구간
 
-| 실차 주행 화면 | 디버깅 화면 |
+| 실차 주행 영상 | 디버깅 영상 |
 | --- | --- |
-| <img src="assets/images/mission_b_real.png" alt="Mission B real run" width="420"> | <img src="assets/images/mission_b_debug.png" alt="Mission B debug view" width="420"> |
+| <img src="assets/gifs/mission_b_real.gif" alt="Mission B real run" width="420"> | <img src="assets/gifs/mission_b_debug.gif" alt="Mission B debug run" width="420"> |
 
 - **핵심 로직:** Stanley 제어로 S구간과 U턴의 차선을 추종하고, 터널에서는 LiDAR로 감지한 좌·우 벽의 대표점 중점을 따라 주행합니다.
 
 ### C. 차량 추종 / 터널 진입
 
-| 실차 주행 화면 | 디버깅 화면 |
+| 실차 주행 영상 | 디버깅 영상 |
 | --- | --- |
-| <img src="assets/images/mission_c_real.png" alt="Mission C real run" width="420"> | <img src="assets/images/mission_c_debug.png" alt="Mission C debug view" width="420"> |
+| <img src="assets/gifs/mission_c_real.gif" alt="Mission C real run" width="420"> | <img src="assets/gifs/mission_c_debug.gif" alt="Mission C debug run" width="420"> |
 
 - **핵심 로직:** 전방 차량을 지속 추적해 거리 기반으로 속도를 조절하거나 정지하며, 이후 터널 구간에서는 좌·우 벽의 대표점 중점을 따라 주행합니다.
 
 ### D. 라바콘 회피
 
-| 실차 주행 화면 | 디버깅 화면 |
+| 실차 주행 영상 | 디버깅 영상 |
 | --- | --- |
-| <img src="assets/images/mission_d_real.png" alt="Mission D real run" width="420"> | <img src="assets/images/mission_d_debug.png" alt="Mission D debug view" width="420"> |
+| <img src="assets/gifs/mission_d_real.gif" alt="Mission D real run" width="420"> | <img src="assets/gifs/mission_d_debug.gif" alt="Mission D debug run" width="420"> |
 
 - **핵심 로직:** 가까운 두 개의 콘을 인식한 뒤 상대 위치로 빈 공간의 가상 waypoint를 생성하여 좌·우 배치가 달라도 동일한 로직으로 통과합니다.
 
 ### E. 종료선 이후 접근 및 평행 주차
 
-| 실차 주행 화면 | 디버깅 화면 |
+| 실차 주행 영상 | 디버깅 영상 |
 | --- | --- |
-| <img src="assets/images/mission_e_real.png" alt="Mission E real run" width="420"> | <img src="assets/images/mission_e_debug.png" alt="Mission E debug view" width="420"> |
+| <img src="assets/gifs/mission_e_real.gif" alt="Mission E real run" width="420"> | <img src="assets/gifs/mission_e_debug.gif" alt="Mission E debug run" width="420"> |
 
 - **핵심 로직:** 마지막 가로 정지선을 감지한 뒤 전방 기준물까지 접근하고, 조건이 만족되면 `data/parking/cmd_vel_record.json`에 저장된 `(dt, vx, wz)` 시퀀스를 재생해 평행 주차를 수행합니다.
 
@@ -263,17 +263,18 @@ inha-capstone/
 │   ├── obstacle_detection_package/  # YOLO, 신호등, Camera-LiDAR fusion
 │   └── decision_making_package/      # Stanley, 상태 머신, 평행 주차
 ├── assets/
-│   └── images/                       # 미션별 실차 및 디버깅 화면
-│       ├── mission_a_real.png
-│       ├── mission_a_debug.png
-│       ├── mission_b_real.png
-│       ├── mission_b_debug.png
-│       ├── mission_c_real.png
-│       ├── mission_c_debug.png
-│       ├── mission_d_real.png
-│       ├── mission_d_debug.png
-│       ├── mission_e_real.png
-│       ├── mission_e_debug.png
+│   ├── gifs/                         # 미션별 실차 및 디버깅 영상
+│   │   ├── mission_a_real.gif
+│   │   ├── mission_a_debug.gif
+│   │   ├── mission_b_real.gif
+│   │   ├── mission_b_debug.gif
+│   │   ├── mission_c_real.gif
+│   │   ├── mission_c_debug.gif
+│   │   ├── mission_d_real.gif
+│   │   ├── mission_d_debug.gif
+│   │   ├── mission_e_real.gif
+│   │   └── mission_e_debug.gif
+│   └── images/
 │       └── track.png                 # 미션 코스 이미지
 ├── data/
 │   └── parking/
