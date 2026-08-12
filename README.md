@@ -38,13 +38,13 @@
 
 - **핵심 로직:** Stanley 제어로 S구간과 U턴의 차선을 추종하고, 터널에서는 LiDAR로 감지한 좌·우 벽의 대표점 중점을 따라 주행합니다.
 
-### C. 차량 추종 / 터널 진입
+### C. 차량 추종
 
 | 실차 주행 영상 | 디버깅 영상 |
 | --- | --- |
 | <img src="assets/gifs/mission_c_real.gif" alt="Mission C real run" width="420"> | <img src="assets/gifs/mission_c_debug.gif" alt="Mission C debug run" width="420"> |
 
-- **핵심 로직:** 전방 차량을 지속 추적해 거리 기반으로 속도를 조절하거나 정지하며, 이후 터널 구간에서는 좌·우 벽의 대표점 중점을 따라 주행합니다.
+- **핵심 로직:** 전방 차량을 지속 추적해 거리 기반으로 속도를 조절하거나 정지하여 주행합니다.
 
 ### D. 라바콘 회피
 
