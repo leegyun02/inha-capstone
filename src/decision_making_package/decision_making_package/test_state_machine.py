@@ -128,7 +128,7 @@ TUNNEL_CENTER_OFFSET = 0.0
 LAST_CURVE_TEST_TIMEOUT_SEC = 200.0   # LAST_CURVE 진입 후 이 시간 지나면 강제 NORMAL 복귀 [s]
 
 # --- 평행주차 (cmd_vel_record_replay_node.py 통합) ---
-PARKING_RECORD_FILE            = os.path.expanduser('~/trinity_ws/cmd_vel_record.json')
+PARKING_RECORD_FILE            = os.path.expanduser('~/trinity_ws/data/parking/cmd_vel_record.json')
 PARKING_FRONT_ANGLE_CENTER     = 0.0                 # 전방 섹터 중심 각도 (REP103: 0=전방)
 PARKING_FRONT_ANGLE_HALF_WIDTH = math.radians(5)     # 전방 섹터 폭
 PARKING_FRONT_TRIGGER_DIST     = 0.35  # 전방벽이 이 거리[m] 이하가 되면 자동으로 REPLAY 시작

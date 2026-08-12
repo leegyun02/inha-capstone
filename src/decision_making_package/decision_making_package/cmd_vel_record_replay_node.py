@@ -80,7 +80,7 @@ SUB_REPLAY_CANCEL = '/cmd_vel_record/cancel' # std_msgs/Bool(true): 재생/녹�
 PUB_CMD_VEL      = '/cmd_vel'                # 재생 중에만 발행
 PUB_STATE        = '/cmd_vel_record/state'   # 현재 상태 문자열 (IDLE/RECORDING/REPLAYING)
 
-DEFAULT_RECORD_FILE = os.path.expanduser('~/trinity_ws/cmd_vel_record.json')
+DEFAULT_RECORD_FILE = os.path.expanduser('~/trinity_ws/data/parking/cmd_vel_record.json')
 
 SUB_SCAN         = '/scan'                    # 자동 트리거용 라이다 입력
 SUB_LAST_LANE    = '/lane/last_lane_detected'  # my_test_stanley.py 가 발행하는 가로 정지선 감지 결과

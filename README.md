@@ -6,7 +6,7 @@
 
 ## 미션 코스
 
-![미션 트랙](./track.png)
+![미션 트랙](./assets/images/track.png)
 
 | 구간 | 미션 내용 | 이 프로젝트의 대응 방식 |
 | --- | --- | --- |
@@ -18,11 +18,49 @@
 
 랩타임의 시작·종료 판정과 장애물의 실제 움직임은 경기 운영 측에서 수행하며, 이 저장소는 각 상황을 인지하고 차량을 제어하는 코드를 담고 있습니다.
 
-## 주행 영상
+## 미션별 주행 및 디버깅 화면
 
-[▶ 디버깅 영상 보기 (`debug_record.mp4`)](./debug_record.mp4)
+각 미션의 **실차 주행 화면**과 **디버깅 화면**을 나란히 배치했습니다. 디버깅 화면에서는 차선 인식, 객체 검출, LiDAR 융합, 상태 전이 등 당시의 판단 근거를 함께 확인할 수 있습니다.
 
-GitHub 미리보기 환경에 따라 영상이 바로 재생되지 않으면 위 링크를 눌러 파일을 열거나 내려받아 확인하세요.
+### A. 신호등 출발 / 보행자 대응
+
+| 실차 주행 화면 | 디버깅 화면 |
+| --- | --- |
+| <img src="assets/images/mission_a_real.png" alt="Mission A real run" width="420"> | <img src="assets/images/mission_a_debug.png" alt="Mission A debug view" width="420"> |
+
+- **핵심 로직:** 고정 ROI에서 초록 신호를 확인하면 출발하고, 이후 YOLO 검출과 LiDAR 클러스터를 결합해 보행자를 인지하여 설정 거리 이내에서는 정지한 뒤 안전하게 다시 출발합니다.
+
+### B. S구간 / U턴 / 터널 구간
+
+| 실차 주행 화면 | 디버깅 화면 |
+| --- | --- |
+| <img src="assets/images/mission_b_real.png" alt="Mission B real run" width="420"> | <img src="assets/images/mission_b_debug.png" alt="Mission B debug view" width="420"> |
+
+- **핵심 로직:** Stanley 제어로 S구간과 U턴의 차선을 추종하고, 터널에서는 LiDAR로 감지한 좌·우 벽의 대표점 중점을 따라 주행합니다.
+
+### C. 차량 추종 / 터널 진입
+
+| 실차 주행 화면 | 디버깅 화면 |
+| --- | --- |
+| <img src="assets/images/mission_c_real.png" alt="Mission C real run" width="420"> | <img src="assets/images/mission_c_debug.png" alt="Mission C debug view" width="420"> |
+
+- **핵심 로직:** 전방 차량을 지속 추적해 거리 기반으로 속도를 조절하거나 정지하며, 이후 터널 구간에서는 좌·우 벽의 대표점 중점을 따라 주행합니다.
+
+### D. 라바콘 회피
+
+| 실차 주행 화면 | 디버깅 화면 |
+| --- | --- |
+| <img src="assets/images/mission_d_real.png" alt="Mission D real run" width="420"> | <img src="assets/images/mission_d_debug.png" alt="Mission D debug view" width="420"> |
+
+- **핵심 로직:** 가까운 두 개의 콘을 인식한 뒤 상대 위치로 빈 공간의 가상 waypoint를 생성하여 좌·우 배치가 달라도 동일한 로직으로 통과합니다.
+
+### E. 종료선 이후 접근 및 평행 주차
+
+| 실차 주행 화면 | 디버깅 화면 |
+| --- | --- |
+| <img src="assets/images/mission_e_real.png" alt="Mission E real run" width="420"> | <img src="assets/images/mission_e_debug.png" alt="Mission E debug view" width="420"> |
+
+- **핵심 로직:** 마지막 가로 정지선을 감지한 뒤 전방 기준물까지 접근하고, 조건이 만족되면 `data/parking/cmd_vel_record.json`에 저장된 `(dt, vx, wz)` 시퀀스를 재생해 평행 주차를 수행합니다.
 
 ## 시스템 구성
 
@@ -138,7 +176,7 @@ ros2 launch bringup_trinity trinity_bringup.launch.py \
   debug:=true
 ```
 
-`trinity_bringup.launch.py`의 기본 모델 경로와 주차 기록 경로는 `~/trinity_ws`를 기준으로 합니다. 다른 경로에서 실행할 때는 `model_path`를 명시하고, `final_test_state_machine.py`의 `PARKING_RECORD_FILE`도 실제 `cmd_vel_record.json` 위치에 맞춰야 합니다.
+`trinity_bringup.launch.py`의 기본 모델 경로와 주차 기록 경로는 `~/trinity_ws`를 기준으로 합니다. 다른 경로에서 실행할 때는 `model_path`를 명시하고, `final_test_state_machine.py`의 `PARKING_RECORD_FILE`도 실제 `data/parking/cmd_vel_record.json` 위치에 맞춰야 합니다.
 
 ## 객체 인식 모델
 
@@ -176,15 +214,15 @@ WAITING_GREEN
 - **앞차/보행자:** YOLO 검출을 LiDAR 클러스터와 융합하고, 잠시 검출이 끊겨도 seed 주변 클러스터를 추적합니다.
 - **라바콘:** 가까운 콘을 중앙콘으로 두고 `W1 = 2 × 중앙콘 - 측면콘` 위치에 빈 공간 waypoint를 만듭니다.
 - **터널:** 좌·우 벽의 대표점을 찾고 두 벽의 횡방향 중점으로 조향합니다.
-- **평행 주차:** 마지막 정지선 이후 전방 거리가 기준값에 도달하면 `cmd_vel_record.json`의 `(dt, vx, wz)` 시퀀스를 재생합니다.
+- **평행 주차:** 마지막 정지선 이후 전방 거리가 기준값에 도달하면 `data/parking/cmd_vel_record.json`의 `(dt, vx, wz)` 시퀀스를 재생합니다.
 
 ## 주차 궤적 다시 기록하기
 
-기본 주차 시퀀스는 [`cmd_vel_record.json`](./cmd_vel_record.json)에 저장되어 있습니다. 별도로 기록/재생 노드를 시험하려면 다른 `/cmd_vel` 발행 노드와 충돌하지 않도록 한 뒤 사용합니다.
+기본 주차 시퀀스는 [`data/parking/cmd_vel_record.json`](./data/parking/cmd_vel_record.json)에 저장되어 있습니다. 사람이 읽기 쉬운 변환본은 [`cmd_vel_record_readable.txt`](./data/parking/cmd_vel_record_readable.txt)에서 확인할 수 있습니다. 별도로 기록/재생 노드를 시험하려면 다른 `/cmd_vel` 발행 노드와 충돌하지 않도록 한 뒤 사용합니다.
 
 ```bash
 ros2 run decision_making_package cmd_vel_record_replay_node \
-  --ros-args -p auto_trigger:=false -p record_file:=$HOME/trinity_ws/cmd_vel_record.json
+  --ros-args -p auto_trigger:=false -p record_file:=$HOME/trinity_ws/data/parking/cmd_vel_record.json
 
 ros2 topic pub -1 /cmd_vel_record/start std_msgs/msg/Bool "{data: true}"
 # 원하는 주차 동작 수행
@@ -224,13 +262,26 @@ inha-capstone/
 │   ├── bringup_trinity/             # 하드웨어 및 통합 launch
 │   ├── obstacle_detection_package/  # YOLO, 신호등, Camera-LiDAR fusion
 │   └── decision_making_package/      # Stanley, 상태 머신, 평행 주차
+├── assets/
+│   └── images/                       # 미션별 실차 및 디버깅 화면
+│       ├── mission_a_real.png
+│       ├── mission_a_debug.png
+│       ├── mission_b_real.png
+│       ├── mission_b_debug.png
+│       ├── mission_c_real.png
+│       ├── mission_c_debug.png
+│       ├── mission_d_real.png
+│       ├── mission_d_debug.png
+│       ├── mission_e_real.png
+│       ├── mission_e_debug.png
+│       └── track.png                 # 미션 코스 이미지
+├── data/
+│   └── parking/
+│       ├── cmd_vel_record.json       # 평행 주차 제어 시퀀스
+│       └── cmd_vel_record_readable.txt # 사람이 읽기 쉬운 주차 기록
 ├── weights/                          # PT, ONNX, TensorRT 모델과 변환 스크립트
-├── cmd_vel_record.json               # 평행 주차 제어 시퀀스
-├── cmd_vel_record_readable.txt       # 사람이 읽기 쉬운 주차 기록
 ├── obstacle.engine                   # 기본 배포용 TensorRT 엔진
-├── extract_images.py                 # ROS bag 학습 이미지 추출 도구
-├── track.png                         # 미션 코스 이미지
-└── debug_record.mp4                  # 주행 디버깅 영상
+└── extract_images.py                 # ROS bag 학습 이미지 추출 도구
 ```
 
 ## 주의 사항
@@ -240,4 +291,3 @@ inha-capstone/
 - `obstacle.engine`을 다른 Jetson으로 옮겼다면 TensorRT 호환 여부를 먼저 확인하세요.
 - 트랙 조명, 카메라 각도, LiDAR 장착 위치가 달라지면 각 노드 상단의 ROI·거리·속도·조향 상수를 재튜닝해야 합니다.
 - `package.xml`에는 일부 Python/ROS 실행 의존성이 선언되어 있지 않으므로, 빌드가 성공해도 실행 환경에 `ultralytics`, OpenCV, NumPy, `cv_bridge`, `vision_msgs`가 필요합니다.
-
